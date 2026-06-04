@@ -1,6 +1,6 @@
 # Mechanisms of sequential world modeling
-Official codebase for the paper: 
-#Path Integration and Object-Location Binding Emerge in an Action-Conditioned Predictive Sequence Network
+
+### Path Integration and Object-Location Binding Emerge in an Action-Conditioned Predictive Sequence Network
 **Linda Ariel Ventura, Victoria Bosch, Tim C Kietzmann, Sushrut Thorat**
 
 This repository is geared towards making all the code and analyses from the [🔗 paper](https://arxiv.org/abs/2602.03490) possible.  
