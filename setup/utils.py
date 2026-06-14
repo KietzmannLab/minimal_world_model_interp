@@ -6,7 +6,10 @@ import random
 import re
 from matplotlib import pyplot as plt
 import numpy as np
+from regex import F
 import torch
+import seaborn as sns
+from setup.data_processing import process_data
 
 def create_run_folder(run_name: str | None = None, base_dir: str | Path = "outputs") -> Path:
     """
@@ -72,7 +75,7 @@ def save_plot(plt, graphs_dir, title):
     plt.show()
     return plot_path
 
-def plot_token_world(world, token_colors, title=None, connections=None, save=False, graphs_dir=None ):
+def plot_token_world(world, token_colors, connections=None, save=False, graphs_dir=None ):
     plt.figure(figsize=(6, 6))
     min_pos, max_pos = world.grid
     ax = plt.gca()
@@ -148,3 +151,157 @@ def load_model(model, device, checkpoints_dir, checkpoint_file=None):
     torch.set_grad_enabled(False)
     return model
 
+
+def entropy_token(model, world_seq):
+    tokens_tensors, directions_tensors, targets = process_data(world_seq, model_type, DEVICE)
+    world = next(iter(world_seq.keys())) 
+
+    tokens = world.tokens
+    hidden_pos = None
+    hidden_token = None
+    for token in tokens:
+        if token.hidden:
+            hidden_token = token
+
+    entropies = []
+
+    if tokens_tensors.dim() == 2:
+        tokens_tensors = tokens_tensors.unsqueeze(0)        # → [1, T, D]
+    if directions_tensors.dim() == 2:
+        directions_tensors = directions_tensors.unsqueeze(0)  # → [1, T, 2]
+
+    with torch.no_grad():
+        logits = model(tokens_tensors, directions_tensors, return_all_activations=False)
+
+    # Iterate over the sequence length.
+    for pos in range(logits.shape[1]):
+        # Get the logits for the current position.
+        pos_logits = logits[0, pos, :]
+        # Compute the probability distribution.
+        pos_probs = F.softmax(pos_logits, dim=-1)
+        # Compute the entropy: - sum_i p_i * log(p_i)
+        entropy = -torch.sum(pos_probs * torch.log(pos_probs + 1e-10))
+        entropies.append(entropy.item())
+
+        if hidden_token is not None:
+            # find the first position of the hidden token
+            if hidden_pos is None and torch.all(tokens_tensors[:, pos, :] == torch.tensor(hidden_token.one_hot_vector, dtype=tokens_tensors[:, pos, :].dtype)):
+                hidden_pos = pos - 1
+
+    return entropies
+
+def loss_token(model, world_seq,device):
+    # Load and prepare data
+    tokens, directions, targets = process_data(world_seq)
+
+    # Move data to device
+    tokens = tokens.to(device)
+    directions = directions.to(device)
+    targets = targets.to(device)
+    model = model.to(device)
+
+    if tokens.dim() == 2:
+        tokens = tokens.unsqueeze(0)        # → [1, T, D]
+    if directions.dim() == 2:
+        directions = directions.unsqueeze(0)  # → [1, T, 2]
+
+    with torch.no_grad():
+        # Forward pass
+        rnn_out = model(tokens, directions)
+        # logits = logits[:, 1::2, :]  # Only keep logits after direction token is given
+        rnn_out = rnn_out.reshape(-1, rnn_out.size(-1))
+        targets = targets.reshape(-1)
+
+        # Compute per-token loss
+        criterion = torch.nn.CrossEntropyLoss(reduction="none")
+
+        # print to see single value or vector
+        per_token_loss = criterion(rnn_out, targets)
+
+    return per_token_loss.cpu().numpy()  # Convert to NumPy for easy processing
+
+def accuracy_token(model, world_seq, device):
+    # Load and prepare data
+    tokens, directions, targets = process_data(world_seq)
+
+    # Move data to device
+    tokens = tokens.to(device)
+    directions = directions.to(device)
+    targets = targets.to(device)
+    model = model.to(device)
+
+    with torch.no_grad():
+        rnn_out = model(tokens, directions)
+        rnn_out = rnn_out.reshape(-1, rnn_out.size(-1))
+        targets = targets.reshape(-1)
+
+        predictions = torch.argmax(rnn_out, dim=-1)
+
+        # Create a binary vector: 1 if correct, 0 otherwise
+        per_token_accuracy = predictions.eq(targets).float()
+
+    return per_token_accuracy.cpu().numpy()
+
+def average_metrics(measurements):
+    """
+    averages over a group of sequences the accuracy or loss per token.
+    Returns dicts: means, stds, ns per position.
+    """
+    grouped = {}
+    for seq_measures in measurements:
+        for pos, value in enumerate(seq_measures):
+            if pos not in grouped:
+                grouped[pos] = []
+            grouped[pos].append(value)
+
+    mean_losses = {}
+    std_losses  = {}
+    ns          = {}
+    
+    for pos, values in grouped.items():
+        arr = np.array(values)
+        mean_losses[pos] = arr.mean()
+        std_losses[pos]  = arr.std(ddof=1)
+        ns[pos]          = len(arr)
+
+    return mean_losses, std_losses, ns
+
+
+
+
+def plot_distribution(means, ci_values, graphs_dir, title="Metric Distribution",
+                    xlabel="Token Position", ylabel="Metric Value", metric="loss"):
+    
+    positions = sorted(means.keys())
+    means = [means[pos] for pos in positions]
+
+    plt.figure(figsize=(10, 6))
+    palette = sns.color_palette("husl", 8)
+    plt.rcParams['axes.prop_cycle'] = plt.cycler(color=palette)
+    palette = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    c2 = palette[0]
+
+    plt.plot(positions, means,linewidth=3.5,  label="Mean", color=c2)
+
+    # if metric.lower != "accuracy":
+    error_interval = [ci_values[pos] for pos in positions]
+
+    # Shade the area between mean-ci and mean+ci
+    lower_bound = [m - s for m, s in zip(means, error_interval)]
+    upper_bound = [m + s for m, s in zip(means, error_interval)]
+
+    plt.fill_between(positions, lower_bound, upper_bound, alpha=0.2, label="CI 95%", color=c2)
+
+    if metric == "loss":
+        plt.ylim(0, 10)
+    else: 
+         plt.ylim(0, 1)
+
+    plt.title(title,  pad=15) 
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel,  labelpad=15) 
+    plt.grid(axis="y", linestyle="--", alpha=0.3)
+    plt.legend()
+
+    save_name = title.replace(" ", "_")
+    save_plot(plt, graphs_dir, f"{save_name}")

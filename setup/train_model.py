@@ -9,7 +9,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import wandb
-from utils import create_run_folder, create_run_folders, find_latest_checkpoint, seed_worker
+from utils import create_run_folder, find_latest_checkpoint, seed_worker
 
 
 
