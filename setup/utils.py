@@ -87,8 +87,6 @@ def plot_token_world(world, token_colors, connections=None, save=False, graphs_d
     plt.yticks(ticks)
     ax.grid(True, linestyle="--", alpha=0.5)
 
-
-
     # Plot tokens
     xs, ys = [], []
     for token in world.tokens:
@@ -153,7 +151,7 @@ def load_model(model, device, checkpoints_dir, checkpoint_file=None):
 
 
 def entropy_token(model, world_seq):
-    tokens_tensors, directions_tensors, targets = process_data(world_seq, model_type, DEVICE)
+    tokens_tensors, directions_tensors, targets = process_data(world_seq)
     world = next(iter(world_seq.keys())) 
 
     tokens = world.tokens
@@ -265,8 +263,6 @@ def average_metrics(measurements):
         ns[pos]          = len(arr)
 
     return mean_losses, std_losses, ns
-
-
 
 
 def plot_distribution(means, ci_values, graphs_dir, title="Metric Distribution",
