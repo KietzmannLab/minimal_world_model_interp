@@ -3,7 +3,6 @@ from matplotlib import pyplot as plt
 from matplotlib.patches import Patch
 import numpy as np
 import torch
-from accuracy_analysis import accuracy_token
 from setup.data_processing import process_data
 from setup.utils import save_plot
 from setup.visual_settings import PALETTE

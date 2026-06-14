@@ -73,7 +73,7 @@ def save_plot(plt, graphs_dir, title):
     return plot_path
 
 def plot_token_world(world, token_colors, title=None, connections=None, save=False, graphs_dir=None ):
-    plt.figure(figsize=(8, 8))
+    plt.figure(figsize=(6, 6))
     min_pos, max_pos = world.grid
     ax = plt.gca()
 
@@ -84,8 +84,7 @@ def plot_token_world(world, token_colors, title=None, connections=None, save=Fal
     plt.yticks(ticks)
     ax.grid(True, linestyle="--", alpha=0.5)
 
-    # Invert y-axis so (0,0) is top-left
-    # ax.invert_yaxis()
+
 
     # Plot tokens
     xs, ys = [], []
