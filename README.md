@@ -44,4 +44,7 @@ Uncomment lines 30-32 from environment.yml only if training is intended. For run
 ## Citation
 
 If you use these networks or any of the provided analyses in your research, please cite our paper:
-```Ventura, L.A., Bosch, V., Kietzmann, T.C., Thorat, S. (2026). Path Integration and Object-Location Binding Emerge in an Action-Conditioned Predictive Sequence Network. Proceedings of the Annual Meeting of the Cognitive Science Society 2026.```
+
+```
+Ventura, L.A., Bosch, V., Kietzmann, T.C., Thorat, S. (2026). Path Integration and Object-Location Binding Emerge in an Action-Conditioned Predictive Sequence Network. Proceedings of the Annual Meeting of the Cognitive Science Society 2026.
+```
