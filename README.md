@@ -3,7 +3,7 @@
 ### Path Integration and Object-Location Binding Emerge in an Action-Conditioned Predictive Sequence Network
 **Linda Ariel Ventura, Victoria Bosch, Tim C Kietzmann, Sushrut Thorat**
 
-This repository is geared towards making all the code and analyses from the [🔗 paper](https://arxiv.org/abs/2602.03490) possible.  
+This repository is geared towards making all the code and analyses from the [🔗 paper](https://escholarship.org/uc/item/1mj18812) possible.  
 
 ### Abstract
 *Adaptive cognition requires structured internal models of objects and their relations. Predictive neural networks are often proposed to learn such world models, but how these are instantiated and how they support prediction remain unclear. We investigate this in a minimal in-silico setting. A recurrent neural network samples tokens sequentially from 2D continuous token scenes and is trained to predict the upcoming token from the current input and a saccade-like displacement. On novel scenes, prediction accuracy improves across the sequence, indicating in-context learning. Decoding analyses reveal path integration and dynamic binding of token identity to position. Interventional analyses show that new bindings can be learned late in sequence and that out-of-distribution bindings can be learned as well. Together, these findings show how structured representations relying on flexible binding emerge to support prediction, offering a mechanistic account of sequential world modeling relevant to cognitive science.*
@@ -44,6 +44,4 @@ Uncomment lines 30-32 from environment.yml only if training is intended. For run
 ## Citation
 
 If you use these networks or any of the provided analyses in your research, please cite our paper:
-```
-Ventura, L. A., Bosch, V., Kietzmann, T. C., & Thorat, S. (2026). A Minimal Task Reveals Emergent Path Integration and Object-Location Binding in a Predictive Sequence Model. arXiv preprint arXiv:2602.03490.
-```
+```Ventura, L.A., Bosch, V., Kietzmann, T.C., Thorat, S. (2026). Path Integration and Object-Location Binding Emerge in an Action-Conditioned Predictive Sequence Network. Proceedings of the Annual Meeting of the Cognitive Science Society 2026.```
